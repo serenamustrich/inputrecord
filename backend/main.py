@@ -67,6 +67,7 @@ realtime_data = {
     "current_mood_score": 0,
     "keystrokes_count": 0,
     "characters_count": 0,
+    "deleted_count": 0,  # 删除次数
     "current_input_method": "unknown",
     "last_key_time": None,
     "recent_keys": [],  # 最近N个按键用于心情分析
@@ -364,6 +365,8 @@ async def get_realtime_stats():
         "current_mood_score": realtime_data["current_mood_score"],
         "keystrokes_count": realtime_data["keystrokes_count"],
         "characters_count": realtime_data["characters_count"],
+        "deleted_count": realtime_data["deleted_count"],
+        "valid_input_count": realtime_data["characters_count"] - realtime_data["deleted_count"],
         "current_input_method": realtime_data["current_input_method"],
         "elapsed_seconds": (datetime.now() - realtime_data["start_time"]).seconds if realtime_data["start_time"] else 0
     }
@@ -504,6 +507,10 @@ async def record_keystroke(data: KeystrokeInput):
 
             # 更新输入法
             realtime_data["current_input_method"] = data.input_method
+
+            # 检测删除键
+            if data.key_name in ['Key.backspace', 'Key.delete']:
+                realtime_data["deleted_count"] += 1
 
             # 记录可打印字符
             is_printable = is_printable_key(data.key_name)

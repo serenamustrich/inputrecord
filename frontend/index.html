@@ -340,6 +340,14 @@
                         <div style="color:#666;font-size:12px">字符数</div>
                         <div class="card-value small info" id="charactersCount">0</div>
                     </div>
+                    <div>
+                        <div style="color:#666;font-size:12px">删除次数</div>
+                        <div class="card-value small" id="deletedCount">0</div>
+                    </div>
+                    <div>
+                        <div style="color:#666;font-size:12px">有效输入</div>
+                        <div class="card-value small success" id="validInputCount">0</div>
+                    </div>
                 </div>
                 <div style="margin-top:20px">
                     <div style="color:#666;font-size:12px;margin-bottom:8px">当前输入法</div>
@@ -454,6 +462,8 @@
             moodTimeline: document.getElementById('moodTimeline'),
             keystrokesCount: document.getElementById('keystrokesCount'),
             charactersCount: document.getElementById('charactersCount'),
+            deletedCount: document.getElementById('deletedCount'),
+            validInputCount: document.getElementById('validInputCount'),
             currentIME: document.getElementById('currentIME'),
             todayDuration: document.getElementById('todayDuration'),
             todaySessions: document.getElementById('todaySessions'),
@@ -527,6 +537,8 @@
             // 统计
             elements.keystrokesCount.textContent = (data.keystrokes || 0).toLocaleString();
             elements.charactersCount.textContent = (data.characters || 0).toLocaleString();
+            elements.deletedCount.textContent = (data.deleted_count || 0).toLocaleString();
+            elements.validInputCount.textContent = (data.valid_input_count || 0).toLocaleString();
             elements.currentIME.textContent = data.input_method || 'ABC';
 
             // 更新心情时间线
