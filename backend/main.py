@@ -69,7 +69,9 @@ def get_or_create_session(db):
     
     return current_session_id
 
-def is_printable_key(key_name: str) -> bool:
+def is_printable_key(key_name: str, key_char: str = None) -> bool:
+    if key_char and key_char.strip():
+        return True
     if not key_name or len(key_name) == 0:
         return False
     ignore_keys = ['Key.shift', 'Key.ctrl', 'Key.alt', 'Key.cmd', 'Key.tab',
@@ -238,12 +240,12 @@ async def record_keystroke_api(data: dict):
             input_method=input_method,
             application=application,
             session_id=session_id,
-            is_printable=is_printable_key(key_name),
+            is_printable=is_printable_key(key_name, key_char),
             char_type=detect_char_type(key_char) if key_char else None
         )
         db.add(event)
         
-        if is_printable_key(key_name) and key_char:
+        if is_printable_key(key_name, key_char) and key_char:
             char_type = detect_char_type(key_char)
             today = datetime.now().strftime("%Y-%m-%d")
             existing = db.query(WordFrequency).filter(
@@ -306,12 +308,12 @@ def on_keystroke_callback(data):
             input_method=input_method,
             application=application,
             session_id=session_id,
-            is_printable=is_printable_key(key_name),
+            is_printable=is_printable_key(key_name, key_char),
             char_type=detect_char_type(key_char) if key_char else None
         )
         db.add(event)
         
-        if is_printable_key(key_name) and key_char:
+        if is_printable_key(key_name, key_char) and key_char:
             char_type = detect_char_type(key_char)
             today = datetime.now().strftime("%Y-%m-%d")
             existing = db.query(WordFrequency).filter(
