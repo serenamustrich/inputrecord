@@ -70,17 +70,6 @@ def get_or_create_session(db):
     return current_session_id
 
 def is_printable_key(key_name: str, key_char: str = None) -> bool:
-    if key_char and key_char.strip():
-        return True
-    if not key_name or len(key_name) == 0:
-        return False
-    ignore_keys = ['Key.shift', 'Key.ctrl', 'Key.alt', 'Key.cmd', 'Key.tab',
-                  'Key.enter', 'Key.backspace', 'Key.delete', 'Key.esc',
-                  'Key.up', 'Key.down', 'Key.left', 'Key.right']
-    if any(k in key_name for k in ignore_keys):
-        return False
-    if key_name.startswith('Key.'):
-        return False
     return True
 
 def detect_char_type(char: str) -> str:
