@@ -52,6 +52,8 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .card-value.small { font-size: 32px; }
+        .card-value.warning { color: #ff6b6b; -webkit-text-fill-color: #ff6b6b; }
+        .card-value.success { color: #00ff88; -webkit-text-fill-color: #00ff88; }
         .full-width { grid-column: 1 / -1; }
 
         /* 键盘样式 */
@@ -119,6 +121,14 @@
                     <div>
                         <div style="color:#666;font-size:12px">字符数</div>
                         <div class="card-value small" id="charactersCount">0</div>
+                    </div>
+                    <div>
+                        <div style="color:#666;font-size:12px">删除次数</div>
+                        <div class="card-value small warning" id="deletedCount">0</div>
+                    </div>
+                    <div>
+                        <div style="color:#666;font-size:12px">有效输入</div>
+                        <div class="card-value small success" id="validInputCount">0</div>
                     </div>
                 </div>
             </div>
@@ -190,6 +200,8 @@
             speedCircle: document.getElementById('speedCircle'),
             keystrokesCount: document.getElementById('keystrokesCount'),
             charactersCount: document.getElementById('charactersCount'),
+            deletedCount: document.getElementById('deletedCount'),
+            validInputCount: document.getElementById('validInputCount'),
             currentIME: document.getElementById('currentIME'),
             todayDuration: document.getElementById('todayDuration'),
             todaySessions: document.getElementById('todaySessions'),
@@ -221,6 +233,8 @@
             if (!data) return;
             elements.keystrokesCount.textContent = (data.keystrokes || 0).toLocaleString();
             elements.charactersCount.textContent = (data.characters || 0).toLocaleString();
+            elements.deletedCount.textContent = (data.deleted_count || 0).toLocaleString();
+            elements.validInputCount.textContent = (data.valid_input_count || 0).toLocaleString();
         }
 
         async function fetchDailyStats() {
