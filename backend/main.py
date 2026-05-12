@@ -74,7 +74,7 @@ def is_printable_key(key_name: str) -> bool:
         return False
     ignore_keys = ['Key.shift', 'Key.ctrl', 'Key.alt', 'Key.cmd', 'Key.tab',
                   'Key.enter', 'Key.backspace', 'Key.delete', 'Key.esc',
-                  'Key.space', 'Key.up', 'Key.down', 'Key.left', 'Key.right']
+                  'Key.up', 'Key.down', 'Key.left', 'Key.right']
     if any(k in key_name for k in ignore_keys):
         return False
     if key_name.startswith('Key.'):
@@ -90,6 +90,8 @@ def detect_char_type(char: str) -> str:
         return "english"
     if char.isdigit():
         return "digit"
+    if char == ' ':
+        return "space"
     if char in '.,!?;:\'"()-[]{}':
         return "punctuation"
     return "special"
@@ -243,25 +245,24 @@ async def record_keystroke_api(data: dict):
         
         if is_printable_key(key_name) and key_char:
             char_type = detect_char_type(key_char)
-            if char_type in ["chinese", "english"]:
-                today = datetime.now().strftime("%Y-%m-%d")
-                existing = db.query(WordFrequency).filter(
-                    WordFrequency.word == key_char,
-                    WordFrequency.date == today,
-                    WordFrequency.session_id == session_id
-                ).first()
-                
-                if existing:
-                    existing.count += 1
-                else:
-                    word_freq = WordFrequency(
-                        word=key_char,
-                        word_type=char_type,
-                        count=1,
-                        date=today,
-                        session_id=session_id
-                    )
-                    db.add(word_freq)
+            today = datetime.now().strftime("%Y-%m-%d")
+            existing = db.query(WordFrequency).filter(
+                WordFrequency.word == key_char,
+                WordFrequency.date == today,
+                WordFrequency.session_id == session_id
+            ).first()
+            
+            if existing:
+                existing.count += 1
+            else:
+                word_freq = WordFrequency(
+                    word=key_char,
+                    word_type=char_type,
+                    count=1,
+                    date=today,
+                    session_id=session_id
+                )
+                db.add(word_freq)
         
         db.commit()
         return {"status": "ok"}
@@ -312,25 +313,24 @@ def on_keystroke_callback(data):
         
         if is_printable_key(key_name) and key_char:
             char_type = detect_char_type(key_char)
-            if char_type in ["chinese", "english"]:
-                today = datetime.now().strftime("%Y-%m-%d")
-                existing = db.query(WordFrequency).filter(
-                    WordFrequency.word == key_char,
-                    WordFrequency.date == today,
-                    WordFrequency.session_id == session_id
-                ).first()
-                
-                if existing:
-                    existing.count += 1
-                else:
-                    word_freq = WordFrequency(
-                        word=key_char,
-                        word_type=char_type,
-                        count=1,
-                        date=today,
-                        session_id=session_id
-                    )
-                    db.add(word_freq)
+            today = datetime.now().strftime("%Y-%m-%d")
+            existing = db.query(WordFrequency).filter(
+                WordFrequency.word == key_char,
+                WordFrequency.date == today,
+                WordFrequency.session_id == session_id
+            ).first()
+            
+            if existing:
+                existing.count += 1
+            else:
+                word_freq = WordFrequency(
+                    word=key_char,
+                    word_type=char_type,
+                    count=1,
+                    date=today,
+                    session_id=session_id
+                )
+                db.add(word_freq)
         
         db.commit()
     except Exception as e:
