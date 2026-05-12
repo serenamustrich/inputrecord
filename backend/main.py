@@ -55,7 +55,6 @@ session_start_time = None
 
 def get_or_create_session(db):
     global current_session_id, session_start_time
-    today = datetime.now().strftime("%Y-%m-%d")
     
     if current_session_id is None:
         current_session_id = str(uuid.uuid4())
@@ -63,7 +62,6 @@ def get_or_create_session(db):
         session = TypingSession(
             session_id=current_session_id,
             start_time=session_start_time,
-            date=today,
             is_active=True
         )
         db.add(session)
@@ -163,7 +161,7 @@ async def get_daily_stats(date: Optional[str] = None):
         ).count()
         
         sessions_count = db.query(TypingSession).filter(
-            TypingSession.date == date
+            func.date(TypingSession.start_time) == date
         ).count()
         
         return {
