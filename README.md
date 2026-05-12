@@ -46,9 +46,12 @@ keyboard_monitor/
 │   ├── index.html        # 监控仪表盘
 │   └── server.py         # 前端服务器 (端口 1314)
 ├── logs/                 # 服务日志
+├── backups/              # 数据库备份
 ├── start.sh              # 手动启动脚本
 ├── install_service.sh    # 安装系统服务
-└── uninstall_service.sh  # 卸载系统服务
+├── uninstall_service.sh  # 卸载系统服务
+├── restart_service.sh    # 安全重启服务（自动备份）
+└── backup_db.sh          # 备份数据库
 ```
 
 ## 快速启动
@@ -129,3 +132,28 @@ tail -f logs/frontend.log
 - `word_frequency` - 词频统计
 - `mood_records` - 心情记录
 - `daily_stats` - 每日汇总
+
+## ⚠️ 数据安全
+
+**重要：请勿使用 `kill -9` 停止服务，这会导致数据丢失！**
+
+### 安全操作命令
+
+```bash
+# 安全重启（自动备份数据库）
+./restart_service.sh
+
+# 手动备份数据库
+./backup_db.sh
+```
+
+### 备份位置
+
+数据库备份保存在 `backups/` 目录，自动保留最近 7 天。
+
+### 恢复数据
+
+```bash
+# 从备份恢复
+cp backups/keyboard_monitor_YYYYMMDD_HHMMSS.db backend/keyboard_monitor.db
+```
