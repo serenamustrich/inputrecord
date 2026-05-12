@@ -193,11 +193,21 @@
                 const res = await fetch(`${API_BASE}/api/stats/word-frequency?limit=50`);
                 const data = await res.json();
                 
-                // Convert array to object: [{word: "a", count: 10}] -> {"a": {count: 10}}
+                // Convert array to object and normalize key names
                 const wordFreq = {};
                 if (Array.isArray(data)) {
                     data.forEach(item => {
-                        wordFreq[item.word] = { count: item.count };
+                        // Normalize key names: Key.space -> Space, Key.enter -> Enter, etc.
+                        let word = item.word;
+                        if (word.startsWith('Key.')) {
+                            word = word.substring(4);
+                            word = word.charAt(0).toUpperCase() + word.slice(1);
+                        }
+                        if (wordFreq[word]) {
+                            wordFreq[word].count += item.count;
+                        } else {
+                            wordFreq[word] = { count: item.count };
+                        }
                     });
                 }
                 renderKeyboard(wordFreq);

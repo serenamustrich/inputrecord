@@ -234,11 +234,12 @@ async def record_keystroke_api(data: dict):
         )
         db.add(event)
         
-        if is_printable_key(key_name, key_char) and key_char:
-            char_type = detect_char_type(key_char)
+        if is_printable_key(key_name, key_char):
+            word = key_char if key_char else key_name
+            char_type = detect_char_type(key_char) if key_char else "special"
             today = datetime.now().strftime("%Y-%m-%d")
             existing = db.query(WordFrequency).filter(
-                WordFrequency.word == key_char,
+                WordFrequency.word == word,
                 WordFrequency.date == today,
                 WordFrequency.session_id == session_id
             ).first()
@@ -247,7 +248,7 @@ async def record_keystroke_api(data: dict):
                 existing.count += 1
             else:
                 word_freq = WordFrequency(
-                    word=key_char,
+                    word=word,
                     word_type=char_type,
                     count=1,
                     date=today,
@@ -302,11 +303,12 @@ def on_keystroke_callback(data):
         )
         db.add(event)
         
-        if is_printable_key(key_name, key_char) and key_char:
-            char_type = detect_char_type(key_char)
+        if is_printable_key(key_name, key_char):
+            word = key_char if key_char else key_name
+            char_type = detect_char_type(key_char) if key_char else "special"
             today = datetime.now().strftime("%Y-%m-%d")
             existing = db.query(WordFrequency).filter(
-                WordFrequency.word == key_char,
+                WordFrequency.word == word,
                 WordFrequency.date == today,
                 WordFrequency.session_id == session_id
             ).first()
@@ -315,7 +317,7 @@ def on_keystroke_callback(data):
                 existing.count += 1
             else:
                 word_freq = WordFrequency(
-                    word=key_char,
+                    word=word,
                     word_type=char_type,
                     count=1,
                     date=today,
