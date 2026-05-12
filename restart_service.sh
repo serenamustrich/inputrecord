@@ -4,11 +4,6 @@
 echo "🔄 安全重启服务"
 echo "================"
 
-# 先备份数据库
-echo "📦 备份数据库..."
-/Users/chency/webot/keyboard_monitor/backup_db.sh
-
-echo ""
 echo "🛑 停止服务..."
 
 # 优雅停止服务
