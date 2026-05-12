@@ -161,10 +161,10 @@
             
         </div>
 
-        <!-- 高频词汇键盘展示 -->
+        <!-- 键盘热力图 -->
         <div class="card full-width" style="margin-bottom:20px">
             <div class="card-header">
-                <span class="card-title">⌨️ 高频词汇</span>
+                <span class="card-title">⌨️ 按键统计</span>
                 <div style="font-size:12px;color:#666">
                     <span style="display:inline-block;width:12px;height:12px;background:rgba(0,100,255,0.3);border-radius:2px;vertical-align:middle"></span> 少
                     <span style="display:inline-block;width:12px;height:12px;background:rgba(255,0,0,0.9);border-radius:2px;vertical-align:middle;margin-left:8px"></span> 多
@@ -253,7 +253,14 @@
             try {
                 const res = await fetch(`${API_BASE}/api/stats/word-frequency?limit=50`);
                 const data = await res.json();
-                renderKeyboard(data);
+                // Convert array to object: [{word: "a", count: 10}] -> {"a": {count: 10}}
+                const wordFreq = {};
+                if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        wordFreq[item.word] = { count: item.count };
+                    });
+                }
+                renderKeyboard(wordFreq);
             } catch {}
         }
 
