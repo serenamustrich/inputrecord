@@ -354,11 +354,12 @@
         }
 
         async function fetchChatContent() {
-            try {
-                const res = await fetch(`${API_BASE}/api/stats/chat-content`);
-                const data = await res.json();
-                renderChatContent(data);
-            } catch {}
+            // TODO: 后端暂未实现此接口
+            // try {
+            //     const res = await fetch(`${API_BASE}/api/stats/chat-content`);
+            //     const data = await res.json();
+            //     renderChatContent(data);
+            // } catch {}
         }
 
         function renderChatContent(data) {
