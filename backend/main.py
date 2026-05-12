@@ -25,6 +25,7 @@ from models import (
     init_db, KeystrokeEvent, TypingSession, WordFrequency,
     MoodRecord, DailyStats, ApplicationUsage, RealTimeStats
 )
+from keyboard_hook import KeyboardHook
 
 # 配置
 DB_PATH = os.path.join(os.path.dirname(__file__), "keyboard_monitor.db")
@@ -665,10 +666,92 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 
+# ==================== 键盘钩子 ====================
+
+keyboard_hook = None
+
+def on_keystroke_callback(data):
+    """键盘钩子回调函数"""
+    global realtime_data
+    
+    with session_lock:
+        if not realtime_data["session_id"]:
+            realtime_data["session_id"] = str(uuid.uuid4())
+            realtime_data["start_time"] = datetime.now()
+        
+        realtime_data["keystrokes_count"] += 1
+        
+        now = datetime.now()
+        interval_ms = 0
+        if realtime_data["last_key_time"]:
+            interval_ms = int((now - realtime_data["last_key_time"]).total_seconds() * 1000)
+        realtime_data["last_key_time"] = now
+        
+        elapsed = (now - realtime_data["start_time"]).total_seconds()
+        if elapsed > 0:
+            realtime_data["current_wpm"] = calculate_wpm(realtime_data["characters_count"], elapsed)
+            realtime_data["current_cpm"] = calculate_cpm(realtime_data["characters_count"], elapsed)
+        
+        realtime_data["current_input_method"] = data.get("input_method", "unknown")
+        
+        key_name = data.get("key_name", "")
+        if key_name in ['Key.backspace', 'Key.delete']:
+            realtime_data["deleted_count"] += 1
+        
+        is_printable = is_printable_key(key_name)
+        if is_printable and data.get("key_char"):
+            realtime_data["characters_count"] += 1
+            realtime_data["word_buffer"] += data["key_char"]
+            
+            if len(realtime_data["word_buffer"]) >= 10:
+                mood, score = analyze_mood(realtime_data["word_buffer"])
+                realtime_data["current_mood"] = mood
+                realtime_data["current_mood_score"] = score
+            
+            char_type = detect_char_type(data["key_char"])
+            if char_type in ["chinese", "english"]:
+                db = SessionLocal()
+                try:
+                    word_freq = WordFrequency(
+                        word=data["key_char"],
+                        word_type=char_type,
+                        count=1,
+                        date=now.strftime("%Y-%m-%d"),
+                        session_id=realtime_data["session_id"]
+                    )
+                    db.add(word_freq)
+                    db.commit()
+                finally:
+                    db.close()
+        
+        # Broadcast to WebSocket
+        asyncio.run(manager.broadcast({
+            "type": "keystroke",
+            "data": {
+                "wpm": round(realtime_data["current_wpm"], 1),
+                "cpm": round(realtime_data["current_cpm"], 1),
+                "mood": realtime_data["current_mood"],
+                "mood_score": realtime_data["current_mood_score"],
+                "keystrokes": realtime_data["keystrokes_count"],
+                "characters": realtime_data["characters_count"],
+                "deleted_count": realtime_data["deleted_count"],
+                "valid_input_count": realtime_data["characters_count"] - realtime_data["deleted_count"],
+                "input_method": realtime_data["current_input_method"]
+            }
+        }))
+
+
 # ==================== 启动 ====================
 
 def run_server():
     """运行服务器"""
+    global keyboard_hook
+    
+    # Start keyboard hook
+    keyboard_hook = KeyboardHook(on_keystroke=on_keystroke_callback)
+    keyboard_hook.start()
+    logger.info("Keyboard hook started")
+    
     uvicorn.run(app, host="127.0.0.1", port=PORT, log_level="info")
 
 
@@ -676,4 +759,5 @@ if __name__ == "__main__":
     print(f"🚀 Keyboard Monitor Backend started on port {PORT}")
     print(f"📊 WebSocket available at ws://127.0.0.1:{PORT}/ws")
     print(f"🌐 API docs at http://127.0.0.1:{PORT}/docs")
+    print(f"⌨️  Keyboard hook active - capturing keystrokes")
     run_server()
