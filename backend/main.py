@@ -562,6 +562,8 @@ async def record_keystroke(data: KeystrokeInput):
                 "mood_score": realtime_data["current_mood_score"],
                 "keystrokes": realtime_data["keystrokes_count"],
                 "characters": realtime_data["characters_count"],
+                "deleted_count": realtime_data["deleted_count"],
+                "valid_input_count": realtime_data["characters_count"] - realtime_data["deleted_count"],
                 "input_method": realtime_data["current_input_method"]
             }
         })
@@ -643,6 +645,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 "current_mood": realtime_data["current_mood"],
                 "keystrokes_count": realtime_data["keystrokes_count"],
                 "characters_count": realtime_data["characters_count"],
+                "deleted_count": realtime_data["deleted_count"],
+                "valid_input_count": realtime_data["characters_count"] - realtime_data["deleted_count"],
                 "current_input_method": realtime_data["current_input_method"]
             }
         })
