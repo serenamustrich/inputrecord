@@ -179,64 +179,44 @@
 
     <script>
         const API_BASE = 'http://127.0.0.1:65500';
-        const WS_URL = 'ws://127.0.0.1:65500/ws';
-        let ws = null;
-        let isConnected = false;
 
         const elements = {
             statusDot: document.getElementById('statusDot'),
             statusText: document.getElementById('statusText'),
-            wpmValue: document.getElementById('wpmValue'),
-            cpmValue: document.getElementById('cpmValue'),
-            speedCircle: document.getElementById('speedCircle'),
             keystrokesCount: document.getElementById('keystrokesCount'),
             charactersCount: document.getElementById('charactersCount'),
             deletedCount: document.getElementById('deletedCount'),
             validInputCount: document.getElementById('validInputCount'),
-            currentIME: document.getElementById('currentIME'),
             todayDuration: document.getElementById('todayDuration'),
             todaySessions: document.getElementById('todaySessions'),
             todayChars: document.getElementById('todayChars'),
             todayAvgWpm: document.getElementById('todayAvgWpm'),
         };
 
-        async function healthCheck() {
+        async function fetchRealtimeStats() {
             try {
-                const res = await fetch(`${API_BASE}/api/stats/realtime`, { signal: AbortSignal.timeout(2000) });
-                return res.ok;
-            } catch { return false; }
-        }
-
-        function connectWS() {
-            try {
-                ws = new WebSocket(WS_URL);
-                ws.onopen = () => { isConnected = true; elements.statusDot.classList.add('active'); elements.statusText.textContent = '已连接'; };
-                ws.onmessage = (event) => {
-                    const msg = JSON.parse(event.data);
-                    if (msg.type === 'keystroke') updateRealtimeStats(msg.data);
-                };
-                ws.onclose = () => { isConnected = false; elements.statusDot.classList.remove('active'); elements.statusText.textContent = '断开连接'; setTimeout(connectWS, 1000); };
-                ws.onerror = () => { ws.close(); };
-            } catch { setTimeout(connectWS, 1000); }
-        }
-
-        function updateRealtimeStats(data) {
-            if (!data) return;
-            elements.keystrokesCount.textContent = (data.keystrokes || 0).toLocaleString();
-            elements.charactersCount.textContent = (data.characters || 0).toLocaleString();
-            elements.deletedCount.textContent = (data.deleted_count || 0).toLocaleString();
-            elements.validInputCount.textContent = (data.valid_input_count || 0).toLocaleString();
+                const res = await fetch(`${API_BASE}/api/stats/realtime`);
+                const data = await res.json();
+                elements.keystrokesCount.textContent = (data.keystrokes_count || 0).toLocaleString();
+                elements.charactersCount.textContent = (data.characters_count || 0).toLocaleString();
+                elements.deletedCount.textContent = (data.deleted_count || 0).toLocaleString();
+                elements.validInputCount.textContent = (data.valid_input_count || 0).toLocaleString();
+                elements.statusText.textContent = '已连接';
+                elements.statusDot.classList.add('active');
+            } catch {
+                elements.statusText.textContent = '连接失败';
+                elements.statusDot.classList.remove('active');
+            }
         }
 
         async function fetchDailyStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats/daily`);
                 const data = await res.json();
-                const minutes = Math.round((data.total_typing_time || 0) / 60);
-                elements.todayDuration.textContent = minutes > 0 ? minutes + '分钟' : '0分钟';
+                elements.todayDuration.textContent = (data.total_sessions || 0) + '次';
                 elements.todaySessions.textContent = data.total_sessions || 0;
                 elements.todayChars.textContent = (data.total_characters || 0).toLocaleString();
-                elements.todayAvgWpm.textContent = Math.round(data.avg_typing_speed || 0);
+                elements.todayAvgWpm.textContent = '0';
             } catch {}
         }
 
@@ -353,29 +333,19 @@
         }
 
         async function init() {
-            elements.statusDot.classList.add('active');
             elements.statusText.textContent = '连接中...';
             
-            // 先加载数据
+            // 先加载所有数据
             await Promise.all([
+                fetchRealtimeStats(),
                 fetchDailyStats(),
                 fetchWordFrequency()
             ]);
-            
-            // 再连接 WebSocket
-            connectWS();
 
-            const isHealthy = await healthCheck();
-            if (isHealthy) {
-                elements.statusText.textContent = '已连接';
-            } else {
-                elements.statusDot.classList.remove('active');
-                elements.statusText.textContent = '后端未启动';
-            }
-
-            // 定时刷新
-            setInterval(fetchDailyStats, 30000);
-            setInterval(fetchWordFrequency, 60000);
+            // 定时刷新所有数据
+            setInterval(fetchRealtimeStats, 3000);
+            setInterval(fetchDailyStats, 10000);
+            setInterval(fetchWordFrequency, 30000);
         }
 
         init();
