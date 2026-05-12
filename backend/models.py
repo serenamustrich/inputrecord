@@ -80,7 +80,7 @@ class WordFrequency(Base):
     """词频表 - 记录词/字使用频率"""
     __tablename__ = 'word_frequency'
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
     # 词/字信息
     word = Column(String(32), nullable=False, index=True)
