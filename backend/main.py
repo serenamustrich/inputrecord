@@ -28,7 +28,7 @@ from models import (
 from keyboard_hook import KeyboardHook
 
 # 配置
-DB_PATH = os.path.join(os.path.dirname(__file__), "keyboard_monitor.db")
+DB_URL = "mysql+pymysql://root@localhost/keyboard_monitor?charset=utf8mb4"
 PORT = 65500
 WS_PORT = 65500
 
@@ -52,7 +52,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 全局变量
-engine, SessionLocal = init_db(DB_PATH)
+engine, SessionLocal = init_db(DB_URL)
 current_session_id = None
 session_lock = Lock()
 

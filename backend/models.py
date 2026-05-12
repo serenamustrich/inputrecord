@@ -233,9 +233,12 @@ class RealTimeStats(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 
-def init_db(db_path: str = "keyboard_monitor.db"):
+def init_db(db_url: str = None):
     """初始化数据库"""
-    engine = create_engine(f'sqlite:///{db_path}', echo=False)
+    if db_url is None:
+        db_url = "mysql+pymysql://root@localhost/keyboard_monitor?charset=utf8mb4"
+    
+    engine = create_engine(db_url, echo=False, pool_pre_ping=True)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     return engine, Session
@@ -243,4 +246,4 @@ def init_db(db_path: str = "keyboard_monitor.db"):
 
 if __name__ == "__main__":
     init_db()
-    print("Database initialized: keyboard_monitor.db")
+    print("Database initialized: MySQL keyboard_monitor")
