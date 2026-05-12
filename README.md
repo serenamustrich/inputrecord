@@ -39,7 +39,7 @@
 keyboard_monitor/
 ├── backend/
 │   ├── main.py           # FastAPI 主服务 (端口 65500)
-│   ├── models.py         # SQLite 数据模型
+│   ├── models.py         # MySQL 数据模型
 │   ├── keyboard_hook.py  # 键盘监控模块
 │   └── requirements.txt
 ├── frontend/
@@ -125,13 +125,21 @@ tail -f logs/frontend.log
 
 ## 数据库
 
-使用 SQLite 存储，主要表：
+使用 MySQL 存储，数据库名：`keyboard_monitor`
+
+主要表：
 
 - `keystroke_events` - 按键事件
 - `typing_sessions` - 打字会话
 - `word_frequency` - 词频统计
 - `mood_records` - 心情记录
 - `daily_stats` - 每日汇总
+
+### 数据库配置
+
+```python
+DB_URL = "mysql+pymysql://root@localhost/keyboard_monitor?charset=utf8mb4"
+```
 
 ## ⚠️ 数据安全
 
