@@ -31,6 +31,7 @@
 - 😊 **心情识别** - 通过输入内容分析情绪变化
 - 📈 **数据可视化** - 实时刷新的仪表盘
 - 🚀 **系统服务** - 开机自动启动，静默运行
+- ✅ **有效输入统计** - 总字符数减去删除次数
 
 ## 架构
 
@@ -105,6 +106,19 @@ tail -f logs/frontend.log
 | `/api/stats/mood-history` | GET | 获取心情历史 |
 | `/api/keystroke` | POST | 记录按键 |
 | `/ws` | WebSocket | 实时数据推送 |
+
+### 实时统计返回字段
+
+| 字段 | 说明 |
+|------|------|
+| `characters_count` | 总输入字符数 |
+| `deleted_count` | 删除次数（退格/删除键） |
+| `valid_input_count` | 有效输入数 = 字符数 - 删除次数 |
+| `keystrokes_count` | 按键总次数 |
+| `current_wpm` | 当前打字速度 (WPM) |
+| `current_cpm` | 当前打字速度 (CPM) |
+| `current_mood` | 当前心情 |
+| `current_input_method` | 当前输入法 |
 
 ## 数据库
 
