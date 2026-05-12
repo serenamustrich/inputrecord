@@ -273,11 +273,6 @@
                 if (item.count > maxCount) maxCount = item.count;
             });
 
-            if (maxCount === 0) {
-                container.innerHTML = '<div style="text-align:center;color:#666;padding:40px">暂无数据</div>';
-                return;
-            }
-
             function getKeyLevel(count) {
                 if (maxCount === 0) return 0;
                 return Math.min(9, Math.floor((count / maxCount) * 10));
