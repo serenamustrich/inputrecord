@@ -1,6 +1,6 @@
 # 键盘监控服务
 
-实时监控键盘输入，记录打字速度、输入法使用、词频统计和心情变化。
+实时监控键盘输入，记录按键频率、输入统计和键盘热力图。
 
 ## 🚀 快速安装（推荐）
 
@@ -24,14 +24,11 @@
 
 ## 功能特性
 
-- ⌨️ **实时按键监控** - 记录每一次按键
-- 📊 **打字速度统计** - WPM/CPM 实时计算
-- 🌐 **输入法检测** - 识别拼音/ABC/五笔等
-- 🔤 **词频统计** - 中英文分开统计高频字词
-- 😊 **心情识别** - 通过输入内容分析情绪变化
-- 📈 **数据可视化** - 实时刷新的仪表盘
-- 🚀 **系统服务** - 开机自动启动，静默运行
-- ✅ **有效输入统计** - 总字符数减去删除次数
+- ⌨️ **全按键监控** - 记录所有按键（包括功能键、空格、回车等）
+- 📊 **按键频率统计** - 每个按键的使用次数
+- 🔤 **有效输入统计** - 总字符数减去删除次数
+- 🎨 **键盘热力图** - 可视化显示按键频率
+- 📈 **数据持久化** - MySQL 存储，重启不丢失
 
 ## 架构
 
@@ -46,12 +43,10 @@ keyboard_monitor/
 │   ├── index.html        # 监控仪表盘
 │   └── server.py         # 前端服务器 (端口 1314)
 ├── logs/                 # 服务日志
-├── backups/              # 数据库备份
 ├── start.sh              # 手动启动脚本
 ├── install_service.sh    # 安装系统服务
 ├── uninstall_service.sh  # 卸载系统服务
-├── restart_service.sh    # 安全重启服务（自动备份）
-└── backup_db.sh          # 备份数据库
+└── restart_service.sh    # 重启服务
 ```
 
 ## 快速启动
@@ -106,22 +101,23 @@ tail -f logs/frontend.log
 | `/api/stats/realtime` | GET | 获取实时统计 |
 | `/api/stats/daily` | GET | 获取每日统计 |
 | `/api/stats/word-frequency` | GET | 获取词频统计 |
-| `/api/stats/mood-history` | GET | 获取心情历史 |
 | `/api/keystroke` | POST | 记录按键 |
-| `/ws` | WebSocket | 实时数据推送 |
 
 ### 实时统计返回字段
 
 | 字段 | 说明 |
 |------|------|
-| `characters_count` | 总输入字符数 |
+| `keystrokes_count` | 按键总次数 |
+| `characters_count` | 可打印字符数 |
 | `deleted_count` | 删除次数（退格/删除键） |
 | `valid_input_count` | 有效输入数 = 字符数 - 删除次数 |
-| `keystrokes_count` | 按键总次数 |
-| `current_wpm` | 当前打字速度 (WPM) |
-| `current_cpm` | 当前打字速度 (CPM) |
-| `current_mood` | 当前心情 |
-| `current_input_method` | 当前输入法 |
+
+### 词频统计返回字段
+
+| 字段 | 说明 |
+|------|------|
+| `word` | 按键名称（如 "a", "Key.space", "Key.enter"） |
+| `count` | 使用次数 |
 
 ## 数据库
 
@@ -129,11 +125,9 @@ tail -f logs/frontend.log
 
 主要表：
 
-- `keystroke_events` - 按键事件
+- `keystroke_events` - 所有按键事件
+- `word_frequency` - 按键频率统计
 - `typing_sessions` - 打字会话
-- `word_frequency` - 词频统计
-- `mood_records` - 心情记录
-- `daily_stats` - 每日汇总
 
 ### 数据库配置
 
@@ -141,27 +135,21 @@ tail -f logs/frontend.log
 DB_URL = "mysql+pymysql://root@localhost/keyboard_monitor?charset=utf8mb4"
 ```
 
-## ⚠️ 数据安全
+### 创建数据库
 
-**重要：请勿使用 `kill -9` 停止服务，这会导致数据丢失！**
-
-### 安全操作命令
-
-```bash
-# 安全重启（自动备份数据库）
-./restart_service.sh
-
-# 手动备份数据库
-./backup_db.sh
+```sql
+CREATE DATABASE keyboard_monitor CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### 备份位置
-
-数据库备份保存在 `backups/` 目录，自动保留最近 7 天。
-
-### 恢复数据
+## 依赖
 
 ```bash
-# 从备份恢复
-cp backups/keyboard_monitor_YYYYMMDD_HHMMSS.db backend/keyboard_monitor.db
+pip install -r requirements.txt
 ```
+
+主要依赖：
+- fastapi
+- uvicorn
+- pynput (键盘监控)
+- sqlalchemy
+- pymysql (MySQL 连接)
