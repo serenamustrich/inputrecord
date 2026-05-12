@@ -190,7 +190,7 @@
                 const container = document.getElementById('keyboardContainer');
                 container.innerHTML = '<div style="text-align:center;color:#666;padding:40px">加载中...</div>';
                 
-                const res = await fetch(`${API_BASE}/api/stats/word-frequency?limit=50`);
+                const res = await fetch(`${API_BASE}/api/stats/word-frequency?limit=200`);
                 const data = await res.json();
                 
                 // Convert array to object and normalize key names
